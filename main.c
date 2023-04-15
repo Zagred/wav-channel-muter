@@ -6,61 +6,8 @@
 #include <MMSystem.h>
 #include <conio.h>
 #include <sys/stat.h>
-//C:\\Users\\paco\\Desktop\\wav-channel-muter\\cheers.wav
-char open_fail(char nig){
-  char fail_name[100],fail_name_char;
-  if(nig=='y'){
-    printf("napishi location na faila:");
-    scanf("%s",fail_name);
-    printf("%s",fail_name);
-    PlaySound(fail_name,NULL,SND_ASYNC|SND_FILENAME);
-    part_1(fail_name);
 
-  }else if(nig=='n'){
-    return printf("dobre chao");
-  }else{
-    return printf("greshno vuvejdane");
-  }
-}
-char part_1(char fail_path[]){
-   char opening,choice_bytes;
-   printf("izberi funkciya s(mute) f(fail path) u(razmeri) vsichko drugo izliza ot programta");
-   scanf("%c",&opening);
-   switch (opening)
-   {
-   case 's':
-      
-      break;
-   case 'f':
-      printf("%s",fail_path);
-      break;
-   case 'u':
-      printf("v kakuv razmer iskash golemianta na faila B(bytes) K(Kbytes) M(Mbytes)");
-      printf("%d",findSize(fail_path));
-      scanf("%c",&choice_bytes);
-     /* switch (choice_bytes)
-      {
-      case "B":
-         
-         break;
-      case "K":
-         
-         break;
-      case "M":
-         
-         break;
-      
-      default:
-         break;
-      }
-      break;
-      */
-   default:
-      break;
-   }
-   
-
-}
+static int s_muted=0;
  int findSize(char file_name[])
 {
     // opening the file in read mode
@@ -82,12 +29,55 @@ char part_1(char fail_path[]){
   
     return res;
 }
-int main()
+void part_1(char **file,int argc, char *argv[]){
+   int do_find_size=0;
+   for(int arg=1;arg<argc;arg++){
+   switch ((argv[arg])[0])
+   {
+   case 's':
+      s_muted=1;
+      printf("%d \n",s_muted);
+      break;
+   case 'f':
+      arg++;
+       *file=argv[arg];
+       if(s_muted==0){ 
+       printf("%s \n",*file);
+       }
+      break;
+   case 'u':
+      do_find_size=1;
+      printf("u \n");
+      break;
+   default:
+      printf("error!!!!");
+      break;
+   } 
+   }
+   if(s_muted==0){
+   if(do_find_size){
+    int byte=findSize(*file); 
+    printf("%d \n",byte);
+    char artibute='B';
+    if(byte>1024){
+      byte/=1024;
+      artibute='K';
+    }
+    if(byte>1024){
+      byte/=1024;
+      artibute='M';
+    }
+    printf("%d %c",byte,artibute);
+    } 
+   }
+}
+//C:\\Users\\paco\\Desktop\\wav-channel-muter\\cheers.wav
+//C:\\Users\\paco\\Desktop\\wav-channel-muter\\test.wav
+int main(int argc, char *argv[])
 {
-  char choice;
-  printf("izberi dali iskash da otvorish fail: y(da) n(ne)");
-  scanf("%s",&choice);
-  open_fail(choice);
+    char *fail="C:\\Users\\paco\\Desktop\\wav-channel-muter\\test.wav";
+    part_1(&fail,argc,argv);
+    PlaySound(fail,NULL,SND_SYNC|SND_FILENAME);
   
 /*short * stereoChannel;
 
