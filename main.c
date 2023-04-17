@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 
 static int s_muted=0;
+//namira size
  int findSize(char file_name[])
 {
     // opening the file in read mode
@@ -29,33 +30,39 @@ static int s_muted=0;
   
     return res;
 }
+//2-ra tochak ot zadacahta
+void part2(char *fail){
+ if(s_muted==0){
+    FILE *ftpr;
+    long channel1[24];
+    ftpr=fopen(fail,"r");
+    for(int i=0;i<24;i++){
+      channel1[i]=getc(ftpr);
+    }
+    printf("channel 23 & 24:%ld%ld\n",channel1[22],channel1[23]);
+    fclose(ftpr);
+    }
+   
+}
+//1-va tochka ot zadacahta
 void part_1(char **file,int argc, char *argv[]){
    int do_find_size=0;
-   for(int arg=1;arg<argc;arg++){
+   *file=argv[1];
+   for(int arg=2;arg<argc;arg++){
    switch ((argv[arg])[0])
    {
    case 's':
       s_muted=1;
-      printf("%d \n",s_muted);
       break;
    case 'f':
-      arg++;
-       *file=argv[arg];
        if(s_muted==0){ 
        printf("%s \n",*file);
        }
       break;
    case 'u':
       do_find_size=1;
-      printf("u \n");
-      break;
-   default:
-      printf("error!!!!");
-      break;
-   } 
-   }
-   if(s_muted==0){
-   if(do_find_size){
+    if(s_muted==0){
+    if(do_find_size){
     int byte=findSize(*file); 
     printf("%d \n",byte);
     char artibute='B';
@@ -67,17 +74,25 @@ void part_1(char **file,int argc, char *argv[]){
       byte/=1024;
       artibute='M';
     }
-    printf("%d %c",byte,artibute);
+    printf("%d %c\n",byte,artibute);
     } 
    }
+      break;
+   } 
+   }
+   
 }
+
 //C:\\Users\\paco\\Desktop\\wav-channel-muter\\cheers.wav
 //C:\\Users\\paco\\Desktop\\wav-channel-muter\\test.wav
 int main(int argc, char *argv[])
 {
     char *fail="C:\\Users\\paco\\Desktop\\wav-channel-muter\\test.wav";
+    
     part_1(&fail,argc,argv);
-    PlaySound(fail,NULL,SND_SYNC|SND_FILENAME);
+    //PlaySound(fail,NULL,SND_SYNC|SND_FILENAME);
+    part2(fail);
+    
   
 /*short * stereoChannel;
 
