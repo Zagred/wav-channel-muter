@@ -6,49 +6,60 @@
 #include <MMSystem.h>
 #include <conio.h>
 #include <sys/stat.h>
-
+// da promeni short s int za da ne izmesti broya na bytovete
+#pragma pack(push,1)
+struct wav_header{
+   int Chunk_ID;
+   int Chunk_Size;
+   int Format;
+   int Subchunk1ID;
+   int Subchunk1Size;
+   short AudioFormat;
+   short NumChannels;
+   int SampleRate;
+   int ByteRate;
+   short BlockAlign;
+   short BitsPerSample;
+   int Subchunk2ID;
+   int Subchunk2Size;
+};
+#pragma pack(pop)
 static int s_muted=0;
-//namira size
- int findSize(char file_name[])
-{
-    // opening the file in read mode
-    FILE* fp = fopen(file_name, "r");
-  
-    // checking if the file exist or not
-    if (fp == NULL) {
-        printf("File Not Found!\n");
-        return -1;
-    }
-  
-    fseek(fp, 0L, SEEK_END);
-  
-    // calculating the size of the file
-    long int res = ftell(fp);
-  
-    // closing the file
-    fclose(fp);
-  
-    return res;
+static char unit='B';
+//3-ta tochka
+void part3(int sound_content_size){
+   if(unit>='a'){
+      unit-=32;
+   }
+   switch (unit)
+   {
+   case'B':
+      unit=0;
+      break;
+   case'K':
+      sound_content_size/=1024;
+      break;   
+    case'M':
+      sound_content_size/=1024;
+      sound_content_size/=1024;
+      break;
+   default:
+      break;
+   }
+   printf("the sound of content is %d %cB",sound_content_size,unit);
+
 }
 //2-ra tochak ot zadacahta
-void part2(char *fail){
- if(s_muted==0){
-    FILE *ftpr;
-    long channel1[24];
-    ftpr=fopen(fail,"r");
-    for(int i=0;i<24;i++){
-      channel1[i]=getc(ftpr);
-    }
-    printf("channel 23 & 24:%ld%ld\n",channel1[22],channel1[23]);
-    fclose(ftpr);
+void part2(struct wav_header*header){
+ if(s_muted==0){   
+    printf("number of channels:%d\n",header->NumChannels);
     }
    
 }
 //1-va tochka ot zadacahta
 void part_1(char **file,int argc, char *argv[]){
-   int do_find_size=0;
    *file=argv[1];
-   for(int arg=2;arg<argc;arg++){
+   for(int arg=1;arg<argc;arg++){
    switch ((argv[arg])[0])
    {
    case 's':
@@ -60,38 +71,37 @@ void part_1(char **file,int argc, char *argv[]){
        }
       break;
    case 'u':
-      do_find_size=1;
-    if(s_muted==0){
-    if(do_find_size){
-    int byte=findSize(*file); 
-    printf("%d \n",byte);
-    char artibute='B';
-    if(byte>1024){
-      byte/=1024;
-      artibute='K';
-    }
-    if(byte>1024){
-      byte/=1024;
-      artibute='M';
-    }
-    printf("%d %c\n",byte,artibute);
-    } 
-   }
+      arg++;
+      unit=(argv[arg])[0];  
       break;
    } 
    }
-   
 }
 
 //C:\\Users\\paco\\Desktop\\wav-channel-muter\\cheers.wav
 //C:\\Users\\paco\\Desktop\\wav-channel-muter\\test.wav
 int main(int argc, char *argv[])
 {
-    char *fail="C:\\Users\\paco\\Desktop\\wav-channel-muter\\test.wav";
+    //
+    char *file_name="C:\\Users\\paco\\Desktop\\wav-channel-muter\\test.wav";
+    FILE *file;
+    file=fopen(file_name,"rb");
+   //
+    fseek(file, 0L, SEEK_END);//otiva na kraya na faila
+    int size = ftell(file); 
+   //
+    char *data=malloc(size);
+    fseek(file, 0L, SEEK_SET);//otiva v nachaloto na faila
+    fread(data,1,size,file);//iska size za tova pochvame ot  purvo ot kraya i posle se vrushtame v nachaloto
+
+    struct wav_header*header=(struct wav_header*)data;
     
-    part_1(&fail,argc,argv);
-    //PlaySound(fail,NULL,SND_SYNC|SND_FILENAME);
-    part2(fail);
+   //
+    part_1(&file_name,argc,argv);
+    part2(header);
+    int sound_content_size=header->Subchunk2Size;
+    part3(sound_content_size);
+    //PlaySound(file_name,NULL,SND_SYNC|SND_FILENAME);
     
   
 /*short * stereoChannel;

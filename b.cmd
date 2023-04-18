@@ -1,3 +1,3 @@
 @echo off
-
-cl main.c /link sndfile.lib winmm.lib
+cls
+cl main.c /Zi /Od /link sndfile.lib winmm.lib
