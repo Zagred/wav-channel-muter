@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 // da promeni short s int za da ne izmesti broya na bytovete
 #pragma pack(push,1)
-struct wav_header{
+struct wav_header{//struktura na celia header int-4 short-2
    int Chunk_ID;
    int Chunk_Size;
    int Format;
@@ -26,10 +26,8 @@ struct wav_header{
 #pragma pack(pop)
 static int s_muted=0;
 static char unit='B',choice[1000];
+
 //4-ta tochka
-short * stereoChannel;
-
-
 void part4(struct wav_header*header){ 
   int choice_rl=0;
   while (1)
@@ -51,9 +49,9 @@ void part4(struct wav_header*header){
    if(s_muted==0){
     printf("choice:%s\n",choice);
    }
-    short *samples=(short*)((char*)header+44)+choice_rl;
-    int counter=0;
-      for (int inc=0;inc<header->Subchunk2Size/sizeof(short);inc+=2){
+    short *samples=(short*)((char*)header+44)+choice_rl;//
+    int counter=0;//koi sampali sa zameneni ot neshto kum 0
+      for (int inc=0;inc<header->Subchunk2Size/sizeof(short);inc+=2){//edin left/right sample e short(2 bite) i prezkachame s  2 za da hodi samo ot edinia vid
          if(samples[inc]!=0){
           counter++;
          }
@@ -106,10 +104,7 @@ void part_1(char **file,int argc, char *argv[]){
       break;
    case 'f':
        arg++;
-       *file=argv[arg];
-       if(s_muted==0){ 
-       printf("%s \n",*file);
-       }
+       *file=argv[arg];//promenya default file-a na novia
       break;
    case 'u':
       arg++;
@@ -118,47 +113,43 @@ void part_1(char **file,int argc, char *argv[]){
    } 
    }
 }
-
-//C:\\Users\\paco\\Desktop\\wav-channel-muter\\test.wav
-//C:\\Users\\paco\\Desktop\\wav-channel-muter\\slay.wav
-//C:\\Users\\paco\\Desktop\\wav-channel-muter\\poe_whisper.wav
-
+//argc e poziciyata v cmd-to a argv e stringa na poziciyata
 int main(int argc, char *argv[])
 {
-    //
+    //default path ako ne vuvedem fail
     char *file_name="C:\\Users\\paco\\Desktop\\wav-channel-muter\\test.wav";
     FILE *file;
-    //
+    //part1 + otvaryanae na faila v binary
     part_1(&file_name,argc,argv);
     file=fopen(file_name,"rb");
-    //
+    //vzimane na razmera na faila
     int ret=fseek(file, 0L, SEEK_END);//otiva na kraya na faila
     int size = ftell(file); 
-    //
+    //locatvame memory i vrushtame v nachaloto na faila
     char *data=malloc(size);
     fseek(file, 0L, SEEK_SET);//otiva v nachaloto na faila
     fread(data,1,size,file);//iska size za tova pochvame ot  purvo ot kraya i posle se vrushtame v nachaloto
-
+    //struktura za "headera" na faila 
     struct wav_header*header=(struct wav_header*)data;
     
-    //
-   
+    //part2 i 3 +vzimane na sound contenta
     part2(header);
-
     int sound_content_size=header->Subchunk2Size;
     part3(sound_content_size);
-    
+    //part4+ proverka za mono ili stereo file+ pri stereo file da napravi nov s promenite
     if(header->NumChannels==2)
     {
        part4(header);
        char new_name[1000];
-       int len=strlen(file_name);
+       int len=strlen(file_name);//duljinata na string format na file-a
+       //pulnene na masiv
        for(int i=0;i<len;i++){
          new_name[i]=file_name[i];
        }
+       //vzimane na stringa vsichko bez ".wav"  
        for(int i=len;i>0;i--){
          if(new_name[i]=='.'){
-            new_name[i]=0;  
+            new_name[i]=0;//0 e za prekratyavane na stringa
          }
        }
        char new_file_name[1000];
@@ -167,7 +158,7 @@ int main(int argc, char *argv[])
        fwrite(data,sizeof(char),size,new_file);
     }
     
-    PlaySound((LPCSTR)header,NULL,SND_SYNC|SND_MEMORY);
+    PlaySound((LPCSTR)header,NULL,SND_SYNC|SND_MEMORY);//playva sounde ot memory toest momentnia file koito bachka programta
     
 }
  
