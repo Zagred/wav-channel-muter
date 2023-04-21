@@ -20,50 +20,48 @@ struct wav_header{
    int ByteRate;
    short BlockAlign;
    short BitsPerSample;
-   char Subchunk2ID;
+   int Subchunk2ID;
    int Subchunk2Size;
 };
 #pragma pack(pop)
-static int s_muted=0,counter=0;
+static int s_muted=0;
 static char unit='B',choice[1000];
 //4-ta tochka
 short * stereoChannel;
-short * leftChannel;
-short * rightChannel;
-int     val     =    50000;
 
-void part4(FILE *file,struct wav_header*header){ 
+
+void part4(struct wav_header*header){ 
+  int choice_rl=0;
   while (1)
-  {
+  { 
+   if(s_muted==0){
     printf("left or right\n");
+   }
     scanf("%s",&choice);
-    if(choice[0]=='l'||choice[0]=='r'){
+    if(strcmp("right",choice))
+      {
+      choice_rl=0;
       break;
-    }
-  }
-  printf("choice:%s\n",choice);
-   fseek(file,44,SEEK_SET);
-   int num;
-   fread(&num,sizeof(int),1,file);
-   stereoChannel = malloc(num*sizeof(short));
-   fseek(file,4,SEEK_CUR);
-   fread(stereoChannel,sizeof(short),num,file);
-      printf("wavfile in stereo\n");
-      for (int inc=0;inc<header->Subchunk2Size/2;inc++){
-         if(choice[0]=='l'){
-          if(stereoChannel[inc*2]!=0){   
-            stereoChannel[inc*2]=0;
-            counter++;
-          }
-         }else if(choice[0]=='r'){
-          if(stereoChannel[(inc*2)+1]!=0){
-            stereoChannel[(inc*2)+1]=0;
-            counter++;
-          }
-         }
+      }else if(strcmp("left",choice))
+      {
+      choice_rl=1;
+      break;
       }
-
-      printf("<%d> samples on the <%s> channel were replaced with 0",counter,choice);
+  }      
+   if(s_muted==0){
+    printf("choice:%s\n",choice);
+   }
+    short *samples=(short*)((char*)header+44)+choice_rl;
+    int counter=0;
+      for (int inc=0;inc<header->Subchunk2Size/sizeof(short);inc+=2){
+         if(samples[inc]!=0){
+          counter++;
+         }
+         samples[inc]=0;
+      }
+     if(s_muted==0){
+     printf("<%d> samples on the <%s> channel were replaced with 0",counter,choice);
+     }
   
     
 }
@@ -87,12 +85,16 @@ void part3(int sound_content_size){
    default:
       break;
    }
+   if(s_muted==0){
    printf("the sound of content is %d %cB \n",sound_content_size,unit);
+   }
 
 }
 //2-ra tochak ot zadacahta
 void part2(struct wav_header*header){  
-    printf("number of channels:%d\n",header->NumChannels);     
+   if(s_muted==0){
+    printf("number of channels:%d\n",header->NumChannels);
+   }     
 }
 //1-va tochka ot zadacahta
 void part_1(char **file,int argc, char *argv[]){
@@ -124,13 +126,13 @@ void part_1(char **file,int argc, char *argv[]){
 int main(int argc, char *argv[])
 {
     //
-    char *file_name="poe_wispers.wav";
+    char *file_name="C:\\Users\\paco\\Desktop\\wav-channel-muter\\test.wav";
     FILE *file;
     //
     part_1(&file_name,argc,argv);
     file=fopen(file_name,"rb");
     //
-    fseek(file, 0L, SEEK_END);//otiva na kraya na faila
+    int ret=fseek(file, 0L, SEEK_END);//otiva na kraya na faila
     int size = ftell(file); 
     //
     char *data=malloc(size);
@@ -140,21 +142,33 @@ int main(int argc, char *argv[])
     struct wav_header*header=(struct wav_header*)data;
     
     //
-    if(s_muted==0){
+   
     part2(header);
 
     int sound_content_size=header->Subchunk2Size;
     part3(sound_content_size);
     
-    if(header->NumChannels==2){
-     printf("stereo \n");
-       
-       part4(file,header);
-    } 
+    if(header->NumChannels==2)
+    {
+       part4(header);
+       char new_name[1000];
+       int len=strlen(file_name);
+       for(int i=0;i<len;i++){
+         new_name[i]=file_name[i];
+       }
+       for(int i=len;i>0;i--){
+         if(new_name[i]=='.'){
+            new_name[i]=0;  
+         }
+       }
+       char new_file_name[1000];
+       snprintf(new_file_name,sizeof(new_file_name),"%s-%s-channel-muted.wav",new_name,choice);
+       FILE* new_file=fopen(new_file_name,"wb");
+       fwrite(data,sizeof(char),size,new_file);
     }
-    PlaySound(file_name,NULL,SND_SYNC|SND_FILENAME);
-    //PlaySound(file_name,NULL,SND_FILENAME|SND_MEMORY);
-
+    
+    PlaySound((LPCSTR)header,NULL,SND_SYNC|SND_MEMORY);
+    
 }
  
 
