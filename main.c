@@ -1,4 +1,4 @@
-#include "sndfile.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +24,7 @@ struct wav_header{//struktura na celia header int-4 short-2
    int Subchunk2Size;
 };
 #pragma pack(pop)
-static int s_muted=0;
+static int s_muted=0,s_unit=0;
 static char unit='B',choice[1000];
 
 //4-ta tochka
@@ -65,6 +65,7 @@ void part4(struct wav_header*header){
 }
 //3-ta tochka
 void part3(int sound_content_size){
+  if(s_unit==1){ 
    if(unit>='a'){
       unit-=32;
    }
@@ -82,11 +83,23 @@ void part3(int sound_content_size){
       break;
    default:
       break;
+   
    }
    if(s_muted==0){
    printf("the sound of content is %d %cB \n",sound_content_size,unit);
    }
-
+   }else if(s_unit==0){
+      if(sound_content_size>1048576){
+         unit='M';
+      }else if(sound_content_size>1024 && sound_content_size<1048576){
+         unit='K';
+      }else{
+         unit='B';
+      }
+      s_unit=1;
+      part3(sound_content_size);
+   }
+    
 }
 //2-ra tochak ot zadacahta
 void part2(struct wav_header*header){  
@@ -105,10 +118,12 @@ void part_1(char **file,int argc, char *argv[]){
    case 'f':
        arg++;
        *file=argv[arg];//promenya default file-a na novia
+      
       break;
    case 'u':
       arg++;
       unit=(argv[arg])[0]; 
+      s_unit=1;
       break;
    } 
    }
@@ -122,6 +137,9 @@ int main(int argc, char *argv[])
     //part1 + otvaryanae na faila v binary
     part_1(&file_name,argc,argv);
     file=fopen(file_name,"rb");
+   if (file == NULL) {
+        printf("Failed to open file: %s\n", file_name);
+      }
     //vzimane na razmera na faila
     int ret=fseek(file, 0L, SEEK_END);//otiva na kraya na faila
     int size = ftell(file); 
@@ -155,6 +173,9 @@ int main(int argc, char *argv[])
        char new_file_name[1000];
        snprintf(new_file_name,sizeof(new_file_name),"%s-%s-channel-muted.wav",new_name,choice);
        FILE* new_file=fopen(new_file_name,"wb");
+        if (new_file == NULL) {
+        printf("Failed to open file: %s\n", new_file_name);
+      }
        fwrite(data,sizeof(char),size,new_file);
     }
     
