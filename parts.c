@@ -23,8 +23,8 @@ struct wav_header{//struktura na celia header int-4 short-2
    int Subchunk2Size;
 };
 #pragma pack(pop)
-static int s_muted=0,s_unit=0;
-static char unit='B',choice[1000];
+static int s_muted=0,s_unit=0,f_file=0;
+static char unit='B',choice[1000],wav_name[1000];
 
 //4-ta tochka
 void part4(struct wav_header*header){ 
@@ -34,12 +34,12 @@ void part4(struct wav_header*header){
    if(s_muted==0){
     printf("left or right\n");
    }
-    scanf("%s",&choice);
-    if(strcmp("right",choice))
+    scanf("%s",choice);
+    if(strcmp("right",choice)==0)
       {
       choice_rl=0;
       break;
-      }else if(strcmp("left",choice))
+      }else if(strcmp("left",choice)==0)
       {
       choice_rl=1;
       break;
@@ -107,7 +107,7 @@ void part2(struct wav_header*header){
    }     
 }
 //1-va tochka ot zadacahta
-void part_1(char **file,int argc, char *argv[]){
+void part_1(int argc, char *argv[]){
    for(int arg=1;arg<argc;arg++){
    switch ((argv[arg])[0])
    {
@@ -116,7 +116,11 @@ void part_1(char **file,int argc, char *argv[]){
       break;
    case 'f':
        arg++;
-       *file=argv[arg];//promenya default file-a na novia
+       f_file=1;
+       int len=strlen(argv[arg]);
+       for(int i=0;i<=len;i++){
+         wav_name[i]=(argv[arg])[i];
+       }
       break;
    case 'u':
       arg++;

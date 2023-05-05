@@ -12,31 +12,30 @@
 int main(int argc, char *argv[])
 {
     //default path ako ne vuvedem fail
-    char *file_name="C:\\Users\\paco\\Desktop\\wav-channel-muter\\test.wav";
     FILE *file;
     //part1 + otvaryanae na faila v binary
-    part_1(&file_name,argc,argv);
+    part_1(argc,argv);
+    if(f_file==0){
+      scanf("%s",wav_name);
+    }
     //proveryava dali e wav file
-    char wav_name[1000],wav[3];
-    int len=strlen(file_name);
-        for(int i=0;i<len;i++){
-         wav_name[i]=file_name[i];
-       }
-       for(int i=0;i<len;i++){
+    char wav[4];
+    int len=strlen(wav_name);
+      for(int i=len;i>=0;i--){
          if(wav_name[i]=='.'){
             wav[0]=wav_name[i+1];
             wav[1]=wav_name[i+2];
             wav[2]=wav_name[i+3];
-            wav_name[i]=0;
+            wav[3]=0;
          }
-       }
+      }
        if(strcmp(wav,"wav")!=0){
          printf("not a wav file");
          return 0;
        }
-    file=fopen(file_name,"rb");
+    file=fopen(wav_name,"rb");
     if (file == NULL) {
-        printf("Failed to open file: %s\n", file_name);
+        printf("Failed to open file: %s\n", wav_name);
       }
     //vzimane na razmera na faila
     int ret=fseek(file, 0L, SEEK_END);//otiva na kraya na faila
@@ -58,7 +57,7 @@ int main(int argc, char *argv[])
        part4(header);
        char new_name[1000];
        for(int i=0;i<len;i++){
-         new_name[i]=file_name[i];
+         new_name[i]=wav_name[i];
        }
        //vzimane na stringa vsichko bez ".wav"  
        for(int i=len;i>0;i--){
