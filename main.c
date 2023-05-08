@@ -7,18 +7,15 @@
 #include <conio.h>
 #include <sys/stat.h>
 #include "parts.c"
-
-//argc e poziciyata v cmd-to a argv e stringa na poziciyata
 int main(int argc, char *argv[])
 {
-    //default path ako ne vuvedem fail
     FILE *file;
-    //part1 + otvaryanae na faila v binary
+    //part1 + opens the file in binary
     part_1(argc,argv);
     if(f_file==0){
       scanf("%s",wav_name);
     }
-    //proveryava dali e wav file
+    //check the file if is a wav file
     char wav[4];
     int len=strlen(wav_name);
       for(int i=len;i>=0;i--){
@@ -37,21 +34,21 @@ int main(int argc, char *argv[])
     if (file == NULL) {
         printf("Failed to open file: %s\n", wav_name);
       }
-    //vzimane na razmera na faila
-    int ret=fseek(file, 0L, SEEK_END);//otiva na kraya na faila
+    //gets the size of the file
+    int ret=fseek(file, 0L, SEEK_END);//goes to the end of the fail
     int size = ftell(file); 
-    //locatvame memory i vrushtame v nachaloto na faila
+    //locating memory and goest to the start of the file
     char *data=malloc(size);
-    fseek(file, 0L, SEEK_SET);//otiva v nachaloto na faila
-    fread(data,1,size,file);//iska size za tova pochvame ot  purvo ot kraya i posle se vrushtame v nachaloto
-    //struktura za "headera" na faila 
+    fseek(file, 0L, SEEK_SET);
+    fread(data,1,size,file);//for the size we need to check from end to start
+    //struct
     struct wav_header*header=(struct wav_header*)data;
     
-    //part2 i 3 +vzimane na sound contenta
+    //part2 i 3 + we get a size content
     part2(header);
     int sound_content_size=header->Subchunk2Size;
     part3(sound_content_size);
-    //part4+ proverka za mono ili stereo file+ pri stereo file da napravi nov s promenite
+    //part4+ chesk if the file is mono or stereo + if stereo it makes changes 
     if(header->NumChannels==2)
     {
        part4(header);
@@ -59,10 +56,10 @@ int main(int argc, char *argv[])
        for(int i=0;i<len;i++){
          new_name[i]=wav_name[i];
        }
-       //vzimane na stringa vsichko bez ".wav"  
+       //we get everything expect ".wav"  
        for(int i=len;i>0;i--){
          if(new_name[i]=='.'){
-            new_name[i]=0;//0 e za prekratyavane na stringa
+            new_name[i]=0;//0 is the end of string
          }
        }
        char new_file_name[1000];
@@ -74,7 +71,7 @@ int main(int argc, char *argv[])
        fwrite(data,sizeof(char),size,new_file);
     }
     
-    PlaySound((LPCSTR)header,NULL,SND_SYNC|SND_MEMORY);//playva sounde ot memory toest momentnia file koito bachka programta
+    PlaySound((LPCSTR)header,NULL,SND_SYNC|SND_MEMORY);//playing sound from memory 
     
 }
  
